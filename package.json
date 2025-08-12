@@ -1,4 +1,10 @@
 {
+  "version": "0.0.1",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
   "dependencies": {
     "chalk": "^5.5.0"
   }
