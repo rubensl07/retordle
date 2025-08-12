@@ -8,11 +8,11 @@ let attemptsLimit = 6;
 let wordCharacterCount = 0;
 
 async function carregarJSON() {
-  const jsonKeyListString = await fs.readFile('./data/valid-key.json', 'utf8');
-  keyList = JSON.parse(jsonKeyListString);
-  const jsonWordString = await fs.readFile('./data/valid-words.json', 'utf8');
-  wordList = JSON.parse(jsonWordString);
-  return;
+    const jsonKeyListString = await fs.readFile('./data/valid-key.json', 'utf8');
+    keyList = JSON.parse(jsonKeyListString);
+    const jsonWordString = await fs.readFile('./data/valid-words.json', 'utf8');
+    wordList = JSON.parse(jsonWordString);
+    return;
 }
 
 const rl = readline.createInterface({
@@ -29,15 +29,15 @@ function question(query) {
 async function main() {
     await carregarJSON();
     console.log(` ===========================================================\n|  _____  ______ _______ ____  _____  _____  _      ______  |\n| |  __ \\|  ____|__   __/ __ \\|  __ \\|  __ \\| |    |  ____| |\n| | |__) | |__     | | | |  | | |__) | |  | | |    | |__    |\n| |  _  /|  __|    | | | |  | |  _  /| |  | | |    |  __|   |\n| | | \\ \\| |____   | | | |__| | | \\ \\| |__| | |____| |____  |\n| |_|  \\_\\______|  |_|  \\____/|_|  \\_\\_____/|______|______| |\n|                                                           |\n ===========================================================`);
-    while(true){
+    while (true) {
         const resultMenu = await menu();
-        const choosenOption = (menuOptions[resultMenu-1]);
+        const choosenOption = (menuOptions[resultMenu - 1]);
         await choosenOption.function();
     }
 }
 
 const menuOptions = [
-    {title: "Iniciar", function: startGame}, {title: "Opções", function: openOptions}, {title: "Instruções", function: showInstructions}, {title: "Créditos", function: showCredits}, {title: "Sair", function: finish}
+    { title: "Iniciar", function: startGame }, { title: "Opções", function: openOptions }, { title: "Instruções", function: showInstructions }, { title: "Créditos", function: showCredits }, { title: "Sair", function: finish }
 ]
 
 async function menu() {
@@ -56,34 +56,90 @@ async function menu() {
     }
 }
 
-async function startGame(){
+async function startGame() {
     const keyWord = (keyList[Math.floor(Math.random() * keyList.length)]).toUpperCase();
-    console.log(keyWord);
     wordCharacterCount = keyWord.length;
     let gameResult = false;
     const attempts = [];
+    const letters = {
+        "a": 1,
+        "b": 1,
+        "c": 1,
+        "d": 1,
+        "e": 1,
+        "f": 1,
+        "g": 1,
+        "h": 1,
+        "i": 1,
+        "j": 1,
+        "k": 1,
+        "l": 1,
+        "m": 1,
+        "n": 1,
+        "o": 1,
+        "p": 1,
+        "q": 1,
+        "r": 1,
+        "s": 1,
+        "t": 1,
+        "u": 1,
+        "v": 1,
+        "w": 1,
+        "x": 1,
+        "z": 1
+    }
 
     while (attempts.length < attemptsLimit && !gameResult) {
-        let input = await question("Digite seu palpite: ");
-        input = input.trim().toUpperCase();
-        if(input.length === wordCharacterCount){
-            if(attempts.includes(input)){
-                console.log("Você já usou esse palpite.");
-                continue;
-            } 
-            gameResult = compareWords(keyWord, input);
-            attempts.push(input);
+        const input = await question("Digite seu palpite: ");
+        const typedWord = input.trim().toUpperCase();
+        if (typedWord.length !== wordCharacterCount) {
+            console.log("Quantidade de caracteres inválida.")
+            continue;
         }
+        if (!/^[a-zA-Z]+$/.test(typedWord)) {
+            console.log("Apenas letras.");
+            continue;
+        }
+        if (attempts.includes(typedWord)) {
+            console.log("Você já usou esse palpite.");
+            continue;
+        }
+        gameResult = keyWord.toUpperCase() == typedWord.toUpperCase();
+        attempts.push(typedWord);
         attempts.forEach(attempt => {
             console.log(coloringLetters(keyWord, attempt));
         });
+        if(gameResult){
+            continue;
+        }
+
+        let keyboardString = '';
+        Object.entries(letters).forEach(([letter, value]) => {
+            let character = '';
+            switch (value) {
+                case 1:
+                    character = letter;
+                    break;
+                case 2:
+                    character = chalk.yellow(letter);
+                    break;
+                case 3:
+                    character = chalk.green(letter);
+                    break;
+                case 0:
+                    character = chalk.gray(letter);
+            }
+            keyboardString += character.toUpperCase(); 
+        });
+
+        console.log('\n'+keyboardString);
     }
 
-    if(!gameResult){
+    if (!gameResult) {
         console.log(chalk.green(keyWord))
     }
 
-    if(gameResult){
+    if (gameResult) {
         console.log(`Parabéns! Você acertou! \n1 - Jogar novamente\n2 - Voltar ao menu`);
     } else {
         console.log(`Puxa vida! Não foi dessa vez :(\n1 - Tentar novamente\n2 - Voltar ao menu`);
@@ -93,7 +149,7 @@ async function startGame(){
         const input = await question("Digite sua ação: ");
 
         if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
-            if(Number(input)===1){
+            if (Number(input) === 1) {
                 startGame();
             } else {
                 break;
@@ -102,36 +158,37 @@ async function startGame(){
     }
 }
 
-function compareWords(keyWord, typedWord){
-    return keyWord.toUpperCase() == typedWord.toUpperCase();
-}
-
-function coloringLetters(keyWord, typedWord){
+function coloringLetters(keyWord, typedWord) {
     let coloredLetters = [];
     for (let index = 0; index < wordCharacterCount; index++) {
-        if(keyWord[index] === typedWord[index]){
+        if (keyWord[index] === typedWord[index]) {
             coloredLetters.push(chalk.green(keyWord[index]));
-        } else {
-            coloredLetters.push(typedWord[index]);
+            continue;
         }
-        // } else if(keyWord.indexOf(typedWord[index]) !== -1) {
-        //     keyWord.indexOf(typedWord[index])
-        // }
+        
+        const keyWordSpecificLetterQty = keyWord.split('').filter(char => char === typedWord[index]).length;
+        const typedWordSpecificLetterQty = typedWord.split('').slice(0, index + 1).filter(char => char === typedWord[index]).length;
+        
+        if(keyWordSpecificLetterQty >= typedWordSpecificLetterQty){
+            coloredLetters.push(chalk.yellow(typedWord[index]));
+            continue;
+        }
+        coloredLetters.push(typedWord[index]);
     }
 
     const coloredWord = coloredLetters.join('');
     return coloredWord;
 }
 
-function openOptions(){
+function openOptions() {
     console.log('Options');
 }
 
-function showInstructions(){
+function showInstructions() {
     console.log('INSTRUÇÕES');
 }
 
-function showCredits(){
+function showCredits() {
     console.log('CRÉDITOS');
 }
 
