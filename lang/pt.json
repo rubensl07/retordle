@@ -1,0 +1,93 @@
+{
+    "menu": {
+        "start": "Iniciar",
+        "settings": "Opções",
+        "instructions": "Instruções",
+        "credits": "Créditos",
+        "exit": "Sair"
+    },
+    "settings": {
+        "language": "Idioma",
+        "maxAttempts": "Máximo de tentativas",
+        "back": "Voltar"
+    },
+    "messages": {
+        "invalid_length": "Quantidade de caracteres inválida.",
+        "letters_only": "Apenas letras.",
+        "word_used": "Você já usou esse palpite.",
+        "invalid_word": "Palavra inválida.",
+        "gameResults": {
+            "win": "Parabéns! Você acertou!",
+            "lose": "Puxa vida! Não foi dessa vez :(",
+            "quit": "O jogo foi encerrado."
+        },
+        "cheatResponse": "Engraçadinho -_-",
+        "currentAttempts": "Quantidade de tentativas atual: {attemptsNumber}", 
+        "maxAttemptsChange": "Aqui é possível configurar o número máximo de tentativas possíveis antes de finalizar o jogo.\nCaso não seja inserido nada, será mantido o valor padrão ({attemptsNumber})"
+    },
+   "instructions": {
+        "title": "================= INSTRUÇÕES =================",
+        "goal": "Descobrir a palavra secreta em até {attempts} tentativas.",
+        "howToPlay": [
+            "COMO JOGAR:",
+            "Digite uma palavra válida com o número correto de letras.",
+            "Após cada tentativa, as letras serão coloridas:",
+            "- {green}: letra correta na posição correta.",
+            "- {yellow}: letra existe na palavra, mas em outra posição.",
+            "- {gray}: letra não está na palavra."
+        ],
+        "rules": [
+            "REGRAS",
+            "Apenas letras do alfabeto são permitidas.",
+            "Palpites repetidos não serão contabilizados.",
+            "É necessário digitar uma palavra válida no idioma escolhido.",
+            "Você pode digitar \"{exit}\" para encerrar o jogo a qualquer momento."
+        ],
+        "tips": [
+            "DICAS:",
+            "Observe o teclado exibido abaixo das tentativas para saber quais letras já foram usadas.",
+            "Comece testando palavras com letras diferentes para descobrir mais rapidamente a composição da palavra secreta."
+        ],
+        "end": "==============================================="
+    },
+    "credits": {
+        "title": "================= CRÉDITOS =================",
+        "dev": "Jogo desenvolvido por: Rubens Lobo",
+        "contact": "Contato: rubenslobodev@gmail.com",
+        "github": "Github: https://github.com/rubensl07",
+        "libs": [
+            "Bibliotecas utilizadas:",
+            "chalk (https://www.npmjs.com/package/chalk)",
+            "readline (Node.js built-in)",
+            "fs/promises (Node.js built-in)"
+        ],
+        "inspirations": [
+            "Fontes e inspirações:",
+            "Wordle original: Josh Wardle"
+        ],
+        "openSource": "Projeto open-source — contribuições são bem-vindas!",
+        "repos": [
+            "Repositórios utilizados:",
+            "Palavras válidas em inglês: https://github.com/seanpatlan/wordle-words/blob/main/valid-words.csv",
+            "Palavras chave em inglês: https://github.com/seanpatlan/wordle-words/blob/main/word-bank.csv",
+            "Palavras chave em português: https://github.com/gabrielnov/termooo/blob/main/words.txt"
+        ],
+        "end": "==============================================="
+    },
+    "interactions": {
+        "guess" : "Digite seu palpite:",
+        "action" : "Digite sua ação:",
+        "languageChange": "Caso deseje alterar o idioma, digite o idioma desejado:",
+        "finishedGameOptions": "1 - Jogar novamente\n2 - Voltar ao menu",
+        "maximumAttempts": "Insira o valor máximo de tentativas:",
+        "enter": "Aperte ENTER para navegar ao menu"
+    },
+    "actions": {
+        "exit": "sair",
+        "cheat": "seu palpite"
+    },
+    "confirmationLanguage": {
+        "message": "Tem certeza que deseja alterar o idioma?",
+        "affirmative": ["s", "sim"]
+    }
+}

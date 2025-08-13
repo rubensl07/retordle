@@ -4,29 +4,52 @@ import fs from 'fs/promises';
 
 const languagesList = [
     {
-        acronym: "en-US", name: "English",
+        acronym: "en", name: "English",
     }, {
-        acronym: "pt-BR", name: "Português",
+        acronym: "pt", name: "Português",
     }
 ]
+
+let currentLanguage = "en";
 let keyList = [];
 let wordList = [];
 let attemptsLimit = 6;
 let wordCharacterCount = 0;
+let lang = {};
 
 async function loadJSON() {
+    let folderName = '';
+    switch (currentLanguage) {
+        case 'en':
+            folderName = 'en-US'
+            break;
+        case 'pt':
+            folderName = 'pt-BR'
+            break;
+    }
+
     let jsonWordString = false;
 
-    const jsonKeyListString = await fs.readFile('./data/en-US/valid-key.json', 'utf8');
+    const jsonKeyListString = await fs.readFile(`./data/${folderName}/valid-key.json`, 'utf8');
     keyList = JSON.parse(jsonKeyListString);
 
     try {
-        jsonWordString = await fs.readFile('./data/en-US/valid-words.json', 'utf8');
+        jsonWordString = await fs.readFile(`./data/${folderName}/valid-words.json`, 'utf8');
     } catch (error) {
         jsonWordString = jsonKeyListString;
     }
     wordList = JSON.parse(jsonWordString);
     return;
+}
+
+async function loadLanguage() {
+    lang = await getLanguage(currentLanguage)
+}
+
+async function getLanguage(language){
+    return JSON.parse(
+        await fs.readFile(`./lang/${language}.json`, 'utf8')
+    );
 }
 
 const rl = readline.createInterface({
@@ -43,6 +66,7 @@ function question(query) {
 async function main() {
     console.clear();
     await loadJSON();
+    await loadLanguage();
     while (true) {
         console.log(` ===========================================================\n|  _____  ______ _______ ____  _____  _____  _      ______  |\n| |  __ \\|  ____|__   __/ __ \\|  __ \\|  __ \\| |    |  ____| |\n| | |__) | |__     | | | |  | | |__) | |  | | |    | |__    |\n| |  _  /|  __|    | | | |  | |  _  /| |  | | |    |  __|   |\n| | | \\ \\| |____   | | | |__| | | \\ \\| |__| | |____| |____  |\n| |_|  \\_\\______|  |_|  \\____/|_|  \\_\\_____/|______|______| |\n|                                                           |\n ===========================================================`);
         const resultMenu = await menu();
@@ -51,29 +75,34 @@ async function main() {
         await choosenOption.function();
     }
 }
-
-const menuOptions = [
-    { title: "Iniciar", function: startGame }, { title: "Opções", function: openSettings }, { title: "Instruções", function: showInstructions }, { title: "Créditos", function: showCredits }, { title: "Sair", function: finish }
-]
-
+let menuOptions = []
 async function menu() {
-    let repeatedMessage = false;
-
+    // let repeatedMessage = false;
+    menuOptions = [
+        { title: lang.menu.start, function: startGame },
+        { title: lang.menu.settings, function: openSettings },
+        { title: lang.menu.instructions, function: showInstructions },
+        { title: lang.menu.credits, function: showCredits },
+        { title: lang.menu.exit, function: finish }
+    ];
     while (true) {
+
         menuOptions.forEach((option, index) => {
             console.log(`${index + 1} - ${option.title}`)
         });
-        const input = await question(`Digite uma opção${repeatedMessage ? " válida" : ""}: `);
+        const input = await question(lang.interactions.action+" ");
+        // const input = await question(`Digite uma opção${repeatedMessage ? " válida" : ""}: `);
 
         if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
             return Number(input);
         }
-        repeatedMessage = true;
+        // repeatedMessage = true;
     }
 }
 
 async function startGame() {
-    const keyWord = (keyList[Math.floor(Math.random() * keyList.length)]).toUpperCase();
+    const keyWord = (keyList[Math.floor(Math.random() * keyList.length)]).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+
     wordCharacterCount = keyWord.length;
     let gameResult = 0;
     const attempts = [];
@@ -113,10 +142,14 @@ async function startGame() {
         3: chalk.green
     };
 
+    console.clear();
     while (attempts.length < attemptsLimit && gameResult === 0) {
-        const input = await question("Digite seu palpite: ");
+        const input = await question(lang.interactions.guess+ " ");
         const typedWord = input.trim().toUpperCase();
-        if (typedWord.toLowerCase() === 'sair' || typedWord.toLowerCase() === 'exit') {
+        if (typedWord.trim().toLowerCase() === lang.actions.cheat) {
+            console.log(lang.messages.cheatResponse);
+        }
+        if (typedWord.trim().toLowerCase() === lang.actions.exit) {
             gameResult = 2;
             break;
         }
@@ -144,15 +177,15 @@ async function startGame() {
     }
 
     const messages = {
-        0: "Puxa vida! Não foi dessa vez :(\n1 - Tentar novamente\n2 - Voltar ao menu",
-        1: "Parabéns! Você acertou! \n1 - Jogar novamente\n2 - Voltar ao menu",
-        2: "O jogo foi encerrado. \n1 - Jogar novamente\n2 - Voltar ao menu"
+        0: `${lang.messages.gameResults.lose}\n${lang.interactions.finishedGameOptions} `,
+        1: `${lang.messages.gameResults.win}\n${lang.interactions.finishedGameOptions}`,
+        2: `${lang.messages.gameResults.quit}\n${lang.interactions.finishedGameOptions} `
     };
 
-    console.log(messages[gameResult] || "Opção inválida");
+    console.log(messages[gameResult]);
 
     while (true) {
-        const input = await question("Digite sua ação: ");
+        const input = await question(lang.interactions.action+" ");
 
         if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
             if (Number(input) === 1) {
@@ -210,29 +243,28 @@ async function startGame() {
 
     function validateWord(typedWord, wordCharacterCount, attempts) {
         if (typedWord.length !== wordCharacterCount) {
-            console.log("Quantidade de caracteres inválida.");
+            console.log(lang.messages.invalid_length);
             return false;
         }
 
         if (!/^[a-zA-Z]+$/.test(typedWord)) {
-            console.log("Apenas letras.");
+            console.log(lang.messages.letters_only);
             return false;
         }
 
         if (attempts.includes(typedWord)) {
-            console.log("Você já usou esse palpite.");
+            console.log(lang.messages.word_used);
             return false;
         }
 
         if (!wordList.includes(typedWord.toLowerCase())) {
-            console.log("Palavra inválida.");
+            console.log(lang.messages.invalid_word);
             return false;
         }
         return true;
     }
 
     function printKeyboard(letters, colorMap) {
-
         const rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
         rows.forEach(row => {
             console.log(row.split('').map(l => colorMap[letters[l]](l)).join(' '));
@@ -240,17 +272,16 @@ async function startGame() {
     }
 }
 
-const settingsOptions = [
-    { title: "Idioma" }, { title: "Máximo de chances" }, { title: "Voltar" }
-]
-
 async function openSettings() {
     while (true) {
+        const settingsOptions = [
+            { title: lang.settings.language }, { title: lang.settings.maxAttempts }, { title: lang.settings.back }
+        ]
         console.clear();
         settingsOptions.forEach((option, index) => {
             console.log(`${index + 1} - ${option.title}`)
         });
-        const input = await question("Digite uma opção: ");
+        const input = await question(lang.interactions.action+" ");
 
         if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
             switch (Number(input)) {
@@ -258,7 +289,7 @@ async function openSettings() {
                     await openLanguagePage()
                     break;
                 case 2:
-                    await openMaxChancePage();
+                    await openMaxAttemptsPage();
                     break;
                 case 3:
                     return;
@@ -273,88 +304,96 @@ async function openLanguagePage() {
         console.log(`${option.acronym} - ${option.name}`)
     });
 
-    const input = await question("Caso deseje alterar o idioma, digite o idioma desejado: ");
-    if (languagesList.some(lang => lang.acronym === input)) {
-        changeLanguage(input)
+    const input = await question(lang.interactions.languageChange+" ");
+    if (languagesList.some(lang => lang.acronym === input.toLowerCase()) && input != currentLanguage) {
+        const confirm = await openConfirmationLanguage(input) 
+        if(confirm)
+        await changeLanguage(input)
     }
     return;
 }
 
-async function openMaxChancePage() {
-    const defaultMaxChance = 6;
-    console.log(`Aqui é possível configurar o número máximo de tentativas possíveis antes de finalizar o jogo.\nCaso não seja inserido nada, o será mantido o valor padrão (${defaultMaxChance})`)
-    const input = await question("Insira o valor máximo de tentativas: ");
+async function openConfirmationLanguage(choosenLang){
+    const languageObj = await getLanguage(choosenLang);
+    const input = await question(languageObj.confirmationLanguage.message+" ");
+    if(languageObj.confirmationLanguage.affirmative.includes(input.trim().toLowerCase()))
+        return true
+    return false
+}
+
+async function openMaxAttemptsPage() {
+    const defaultMaxAttempt = 6;
+    console.log(lang.messages.currentAttempts.replace("{attemptsNumber}", attemptsLimit));
+    console.log(lang.messages.maxAttemptsChange.replace("{attemptsNumber}", defaultMaxAttempt));
+    const input = await question(lang.interactions.maximumAttempts+" ");
     if (!isNaN(input) && input.trim() !== '') {
         attemptsLimit = Number(input);
     } else {
-        attemptsLimit = defaultMaxChance;
+        attemptsLimit = defaultMaxAttempt;
     }
     return;
 }
 
-function changeLanguage(desiredLanguage) {
-    console.log(desiredLanguage)
+async function changeLanguage(desiredLanguage) {
+    currentLanguage = desiredLanguage;
+    await loadJSON();
+    await loadLanguage();
+    return
 }
 
 async function showInstructions() {
     console.clear();
-    console.log(`
-================= INSTRUÇÕES =================
 
-OBJETIVO:
-Descobrir a palavra secreta em até ${attemptsLimit} tentativas.
+    console.log(lang.instructions.title);
+    console.log(lang.instructions.goal.replace("{attempts}", attemptsLimit));
 
-COMO JOGAR:
-1. Digite uma palavra válida com o número correto de letras.
-2. Após cada tentativa, as letras serão coloridas:
-   - ${chalk.green('Verde')}: letra correta na posição correta.
-   - ${chalk.yellow('Amarelo')}: letra existe na palavra, mas em outra posição.
-   - ${chalk.gray('Cinza')}: letra não está na palavra.
+    console.log("");
+    lang.instructions.howToPlay.forEach(line => {
+        console.log(line
+            .replace("{green}", chalk.green('Green'))
+            .replace("{yellow}", chalk.yellow('Yellow'))
+            .replace("{gray}", chalk.gray('Gray'))
+        );
+    });
 
-REGRAS:
-- Apenas letras do alfabeto são permitidas.
-- Palpites repetidos não serão contabilizados.
-- É necessário digitar uma palavra válida no idioma escolhido.
-- Você pode digitar "${chalk.cyan('sair')}" ou "${chalk.cyan('exit')}" para encerrar o jogo a qualquer momento.
+    console.log("");
+    lang.instructions.rules.forEach(line => {
+        console.log(line
+            .replace("{exit}", chalk.cyan(lang.actions.exit))
+        );
+    });
 
-DICAS:
-- Observe o teclado exibido abaixo das tentativas para saber quais letras já foram usadas.
-- Comece testando palavras com letras diferentes para descobrir mais rapidamente a composição da palavra secreta.
+    console.log("");
+    lang.instructions.tips.forEach(line => console.log(line));
 
-===============================================
-    `);
-    await question(`Aperte ENTER para retornar ao MENU`);
+    console.log(lang.instructions.end);
+    await question(lang.interactions.enter);
 }
+
 
 
 async function showCredits() {
-    console.log(chalk.white(`
+    console.clear();
+    console.log(chalk.white(lang.credits.title));
+    console.log(lang.credits.dev);
+    console.log(lang.credits.contact);
+    console.log(lang.credits.github);
 
-================= CRÉDITOS =================
+    console.log();
+    lang.credits.libs.forEach((lib, index) => console.log(`${index==0?'':'- '}${lib}`));
 
-Jogo desenvolvido por: Rubens Lobo
-Contato: rubenslobodev@gmail.com
-Github: https://github.com/rubensl07
+    console.log();
+    lang.credits.inspirations.forEach((item, index) => console.log(`${index==0?'':'- '}${item}`));
 
-Bibliotecas utilizadas:
-- chalk (https://www.npmjs.com/package/chalk)
-- readline (Node.js built-in)
-- fs/promises (Node.js built-in)
+    console.log("\n" + lang.credits.openSource);
 
-Fontes e inspirações:
-- Wordle original: Josh Wardle
+    console.log();
+    lang.credits.repos.forEach((repo, index) => console.log(`${index==0?'':'- '}${repo}`));
 
-Projeto open-source — contribuições são bem-vindas!
-
-Repositórios utilizados:
-- Palavras válidas em inglês: https://github.com/seanpatlan/wordle-words/blob/main/valid-words.csv
-- Palavras chave em inglês: https://github.com/seanpatlan/wordle-words/blob/main/word-bank.csv
-- Palavras chave em português: https://github.com/gabrielnov/termooo/blob/main/words.txt
-
-==============================================
-`));
-    await question(`Aperte ENTER para retornar ao MENU`);
+    console.log(lang.credits.end);
+    await question(lang.interactions.enter);
 }
+
 
 function finish() {
     process.exit();

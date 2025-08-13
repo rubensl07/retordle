@@ -1,0 +1,94 @@
+{
+    "menu": {
+        "start": "Start",
+        "settings": "Options",
+        "instructions": "Instructions",
+        "credits": "Credits",
+        "exit": "Exit"
+    },
+    "settings": {
+        "language": "Language",
+        "maxAttempts": "Maximum of attempts",
+        "back": "Go back"
+    },
+    "messages": {
+        "invalid_length": "Invalid number of characters.",
+        "letters_only": "Only letters are allowed.",
+        "word_used": "You already used this guess.",
+        "invalid_word": "Invalid word.",
+        "gameResults": {
+        "win": "Congratulations! You got it right!",
+        "lose": "Too bad! Not this time :(",
+        "quit": "Game ended."
+        },
+        "cheatResponse": "Funny guy -_-",
+        "currentAttempts": "Attempts so far: {attemptsNumber}", 
+        "maxAttemptsChange": "Set the maximum number of attempts before the game ends.\nIf nothing is set, the default value ({attemptsNumber}) will remain."
+    },
+ "instructions": {
+        "title": "================= INSTRUCTIONS =================",
+        "goal": "Guess the secret word within {attempts} attempts.",
+        "howToPlay": [
+            "HOW TO PLAY:",
+            "Type a valid word with the correct number of letters.",
+            "After each guess, the letters will be colored:",
+            "- {green}: correct letter in the correct position.",
+            "- {yellow}: letter exists in the word but in another position.",
+            "- {gray}: letter is not in the word."
+        ],
+        "rules": [
+            "RULES:",
+            "Only alphabet letters are allowed.",
+            "Repeated guesses will not be counted.",
+            "You must type a valid word in the chosen language.",
+            "You can type \"{exit}\" to quit the game at any time."
+        ],
+        "tips": [
+            "TIPS:",
+            "Look at the keyboard displayed below the attempts to see which letters have already been used.",
+            "Start testing words with different letters to quickly discover the composition of the secret word."
+        ],
+        "end": "==============================================="
+    },
+    "credits": {
+        "title": "================= CREDITS =================",
+        "dev": "Game developed by: Rubens Lobo",
+        "contact": "Contact: rubenslobodev@gmail.com",
+        "github": "Github: https://github.com/rubensl07",
+        "libs": [
+            "Libraries used:",
+            "chalk (https://www.npmjs.com/package/chalk)",
+            "readline (Node.js built-in)",
+            "fs/promises (Node.js built-in)"
+        ],
+        "inspirations": [
+            "Sources and inspirations:",
+            "Original Wordle: Josh Wardle"
+        ],
+        "openSource": "Open-source project — contributions are welcome!",
+        "repos": [
+            "Repositories used:",
+            "Valid words in English: https://github.com/seanpatlan/wordle-words/blob/main/valid-words.csv",
+            "Key words in English: https://github.com/seanpatlan/wordle-words/blob/main/word-bank.csv",
+            "Key words in Portuguese: https://github.com/gabrielnov/termooo/blob/main/words.txt"
+        ],
+        "end": "==============================================="
+    },
+    "interactions": {
+        "guess" : "Type your guess:",
+        "action" : "Take your action:",
+        "languageChange" : "If you want to change language, type the desired language:",
+        "finishedGameOptions": "1 - Play again\n2 - Return to menu",
+        "maximumAttempts": "Insert the maximum number of attempts:",
+        "enter": "Press ENTER to navigate to menu."
+
+    },
+    "actions": {
+        "exit": "exit",
+        "cheat": "your guess"
+    },
+    "confirmationLanguage": {
+        "message": "Are you certain you want to change language?",
+        "affirmative": ["y", "yes"]
+    }
+}
