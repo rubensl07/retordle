@@ -15,35 +15,39 @@ let keyList = [];
 let wordList = [];
 let attemptsLimit = 6;
 let wordCharacterCount = 0;
-let lang = {};
+let translation = {};
 
 async function loadJSON() {
-    let folderName = '';
-    switch (currentLanguage) {
-        case 'en':
-            folderName = 'en-US'
-            break;
-        case 'pt':
-            folderName = 'pt-BR'
-            break;
-    }
+    function getFolderNameByLanguage(language) {
+    const map = {
+        en: "en-US",
+        pt: "pt-BR"
+    };
+    return map[language] || "en-US"; // padrão
+}
 
-    let jsonWordString = false;
 
-    const jsonKeyListString = await fs.readFile(`./data/${folderName}/valid-key.json`, 'utf8');
+function getDataPath(language, fileName) {
+    return `./data/${getFolderNameByLanguage(language)}/${fileName}`;
+}
+       const keyListPath = getDataPath(currentLanguage, 'valid-key.json');
+    const wordsPath = getDataPath(currentLanguage, 'valid-words.json');
+
+    const jsonKeyListString = await fs.readFile(keyListPath, 'utf8');
     keyList = JSON.parse(jsonKeyListString);
 
+    let jsonWordString;
     try {
-        jsonWordString = await fs.readFile(`./data/${folderName}/valid-words.json`, 'utf8');
-    } catch (error) {
+        jsonWordString = await fs.readFile(wordsPath, 'utf8');
+    } catch {
         jsonWordString = jsonKeyListString;
     }
+
     wordList = JSON.parse(jsonWordString);
-    return;
 }
 
 async function loadLanguage() {
-    lang = await getLanguage(currentLanguage)
+    translation = await getLanguage(currentLanguage)
 }
 
 async function getLanguage(language){
@@ -79,18 +83,18 @@ let menuOptions = []
 async function menu() {
     // let repeatedMessage = false;
     menuOptions = [
-        { title: lang.menu.start, function: startGame },
-        { title: lang.menu.settings, function: openSettings },
-        { title: lang.menu.instructions, function: showInstructions },
-        { title: lang.menu.credits, function: showCredits },
-        { title: lang.menu.exit, function: finish }
+        { title: translation.menu.start, function: startGame },
+        { title: translation.menu.settings, function: openSettings },
+        { title: translation.menu.instructions, function: showInstructions },
+        { title: translation.menu.credits, function: showCredits },
+        { title: translation.menu.exit, function: finish }
     ];
     while (true) {
 
         menuOptions.forEach((option, index) => {
             console.log(`${index + 1} - ${option.title}`)
         });
-        const input = await question(lang.interactions.action+" ");
+        const input = await question(translation.interactions.action+" ");
         // const input = await question(`Digite uma opção${repeatedMessage ? " válida" : ""}: `);
 
         if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
@@ -101,189 +105,195 @@ async function menu() {
 }
 
 async function startGame() {
-    const keyWord = (keyList[Math.floor(Math.random() * keyList.length)]).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    let playAgain = true;
 
-    wordCharacterCount = keyWord.length;
-    let gameResult = 0;
-    const attempts = [];
-    const letters = {
-        "A": 0,
-        "B": 0,
-        "C": 0,
-        "D": 0,
-        "E": 0,
-        "F": 0,
-        "G": 0,
-        "H": 0,
-        "I": 0,
-        "J": 0,
-        "K": 0,
-        "L": 0,
-        "M": 0,
-        "N": 0,
-        "O": 0,
-        "P": 0,
-        "Q": 0,
-        "R": 0,
-        "S": 0,
-        "T": 0,
-        "U": 0,
-        "V": 0,
-        "W": 0,
-        "X": 0,
-        "Y": 0,
-        "Z": 0
-    }
+    while(playAgain){
 
-    const colorMap = {
-        0: (l) => l,
-        1: chalk.gray,
-        2: chalk.yellow,
-        3: chalk.green
-    };
-
-    console.clear();
-    while (attempts.length < attemptsLimit && gameResult === 0) {
-        const input = await question(lang.interactions.guess+ " ");
-        const typedWord = input.trim().toUpperCase();
-        if (typedWord.trim().toLowerCase() === lang.actions.cheat) {
-            console.log(lang.messages.cheatResponse);
+        const keyWord = (keyList[Math.floor(Math.random() * keyList.length)]).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    
+        wordCharacterCount = keyWord.length;
+        let gameResult = 0;
+        const attempts = [];
+        const letters = {
+            "A": 0,
+            "B": 0,
+            "C": 0,
+            "D": 0,
+            "E": 0,
+            "F": 0,
+            "G": 0,
+            "H": 0,
+            "I": 0,
+            "J": 0,
+            "K": 0,
+            "L": 0,
+            "M": 0,
+            "N": 0,
+            "O": 0,
+            "P": 0,
+            "Q": 0,
+            "R": 0,
+            "S": 0,
+            "T": 0,
+            "U": 0,
+            "V": 0,
+            "W": 0,
+            "X": 0,
+            "Y": 0,
+            "Z": 0
         }
-        if (typedWord.trim().toLowerCase() === lang.actions.exit) {
-            gameResult = 2;
-            break;
-        }
-
-        if (!validateWord(typedWord, wordCharacterCount, attempts))
-            continue;
-
+    
+        const colorMap = {
+            0: (l) => l,
+            1: chalk.gray,
+            2: chalk.bgYellow,
+            3: chalk.bgGreen
+        };
+    
         console.clear();
-
-        gameResult = (keyWord == typedWord) * 1;
-        attempts.push(typedWord);
-        attempts.forEach(attempt => {
-            console.log(coloringLetters(keyWord, attempt));
-        });
-        if (gameResult != 0) {
-            continue;
-        }
-
-        printKeyboard(letters, colorMap);
-    }
-
-
-    if (gameResult != 1) {
-        console.log(chalk.green(keyWord))
-    }
-
-    const messages = {
-        0: `${lang.messages.gameResults.lose}\n${lang.interactions.finishedGameOptions} `,
-        1: `${lang.messages.gameResults.win}\n${lang.interactions.finishedGameOptions}`,
-        2: `${lang.messages.gameResults.quit}\n${lang.interactions.finishedGameOptions} `
-    };
-
-    console.log(messages[gameResult]);
-
-    while (true) {
-        const input = await question(lang.interactions.action+" ");
-
-        if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
-            if (Number(input) === 1) {
-                startGame();
-            } else {
+        while (attempts.length < attemptsLimit && gameResult === 0) {
+            const input = await question(translation.interactions.guess+ " ");
+            const typedWord = input.trim().toUpperCase();
+            if (typedWord.trim().toLowerCase() === translation.actions.cheat) {
+                console.log(translation.messages.cheatResponse);
+            }
+            if (typedWord.trim().toLowerCase() === translation.actions.exit) {
+                gameResult = 2;
                 break;
             }
-        }
-    }
-
-    function coloringLetters(keyWord, typedWord) {
-        const coloredLetters = [];
-        const keyWordArr = keyWord.split('');
-        const typedWordArr = typedWord.split('');
-        const usedPositions = new Array(wordCharacterCount).fill(false);
-
-        // Primeiro, marca verdes e marca as posições usadas
-        for (let i = 0; i < wordCharacterCount; i++) {
-            if (typedWordArr[i] === keyWordArr[i]) {
-                coloredLetters[i] = chalk.green(typedWordArr[i]);
-                letters[typedWordArr[i]] = 3;
-                usedPositions[i] = true;
-            } else {
-                coloredLetters[i] = null; // placeholder para agora
+    
+            if (!validateWord(typedWord, wordCharacterCount, attempts))
+                continue;
+    
+            console.clear();
+    
+            gameResult = (keyWord == typedWord) * 1;
+            attempts.push(typedWord);
+            attempts.forEach(attempt => {
+                console.log(coloringLetters(keyWord, attempt));
+            });
+            if (gameResult != 0) {
+                continue;
             }
+    
+            printKeyboard(letters, colorMap);
         }
-
-        // Depois, marca amarelas e cinzas
-        for (let i = 0; i < wordCharacterCount; i++) {
-            if (coloredLetters[i] !== null) continue;
-
-            const letter = typedWordArr[i];
-            let foundYellow = false;
-
-            for (let j = 0; j < wordCharacterCount; j++) {
-                if (!usedPositions[j] && keyWordArr[j] === letter) {
-                    foundYellow = true;
-                    usedPositions[j] = true;
+    
+    
+        if (gameResult != 1) {
+            console.log(chalk.green(keyWord))
+        }
+    
+        const messages = {
+            0: `${translation.messages.gameResults.lose}\n${translation.interactions.finishedGameOptions} `,
+            1: `${translation.messages.gameResults.win}\n${translation.interactions.finishedGameOptions}`,
+            2: `${translation.messages.gameResults.quit}\n${translation.interactions.finishedGameOptions} `
+        };
+    
+        console.log(messages[gameResult]);
+    
+        while (true) {
+            const input = await question(translation.interactions.action+" ");
+    
+            if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
+                if (Number(input) === 1) {
+                    break; 
+                } else {
+                    playAgain = false;
                     break;
                 }
             }
-
-            if (foundYellow) {
-                coloredLetters[i] = chalk.yellow(letter);
-                if (letters[letter] !== 3) letters[letter] = 2;
-            } else {
-                coloredLetters[i] = chalk.gray(letter);
-                if (letters[letter] !== 3 && letters[letter] !== 2) letters[letter] = 1;
+        }
+    
+        function coloringLetters(keyWord, typedWord) {
+            const coloredLetters = [];
+            const keyWordArr = keyWord.split('');
+            const typedWordArr = typedWord.split('');
+            const usedPositions = new Array(wordCharacterCount).fill(false);
+    
+            // Primeiro, marca verdes e marca as posições usadas
+            for (let i = 0; i < wordCharacterCount; i++) {
+                if (typedWordArr[i] === keyWordArr[i]) {
+                    coloredLetters[i] = chalk.green(typedWordArr[i]);
+                    letters[typedWordArr[i]] = 3;
+                    usedPositions[i] = true;
+                } else {
+                    coloredLetters[i] = null; // placeholder para agora
+                }
             }
+    
+            // Depois, marca amarelas e cinzas
+            for (let i = 0; i < wordCharacterCount; i++) {
+                if (coloredLetters[i] !== null) continue;
+    
+                const letter = typedWordArr[i];
+                let foundYellow = false;
+    
+                for (let j = 0; j < wordCharacterCount; j++) {
+                    if (!usedPositions[j] && keyWordArr[j] === letter) {
+                        foundYellow = true;
+                        usedPositions[j] = true;
+                        break;
+                    }
+                }
+    
+                if (foundYellow) {
+                    coloredLetters[i] = chalk.yellow(letter);
+                    if (letters[letter] !== 3) letters[letter] = 2;
+                } else {
+                    coloredLetters[i] = chalk.gray(letter);
+                    if (letters[letter] !== 3 && letters[letter] !== 2) letters[letter] = 1;
+                }
+            }
+    
+            return coloredLetters.join('');
         }
-
-        return coloredLetters.join('');
-    }
-
-
-    function validateWord(typedWord, wordCharacterCount, attempts) {
-        if (typedWord.length !== wordCharacterCount) {
-            console.log(lang.messages.invalid_length);
-            return false;
+    
+    
+        function validateWord(typedWord, wordCharacterCount, attempts) {
+            if (typedWord.length !== wordCharacterCount) {
+                console.log(translation.messages.invalid_length);
+                return false;
+            }
+    
+            if (!/^[a-zA-Z]+$/.test(typedWord)) {
+                console.log(translation.messages.letters_only);
+                return false;
+            }
+    
+            if (attempts.includes(typedWord)) {
+                console.log(translation.messages.word_used);
+                return false;
+            }
+    
+            if (!wordList.includes(typedWord.toLowerCase())) {
+                console.log(translation.messages.invalid_word);
+                return false;
+            }
+            return true;
         }
-
-        if (!/^[a-zA-Z]+$/.test(typedWord)) {
-            console.log(lang.messages.letters_only);
-            return false;
+    
+        function printKeyboard(letters, colorMap) {
+            const rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+            rows.forEach(row => {
+                console.log(row.split('').map(l => colorMap[letters[l]](l)).join(' '));
+            });
         }
-
-        if (attempts.includes(typedWord)) {
-            console.log(lang.messages.word_used);
-            return false;
-        }
-
-        if (!wordList.includes(typedWord.toLowerCase())) {
-            console.log(lang.messages.invalid_word);
-            return false;
-        }
-        return true;
-    }
-
-    function printKeyboard(letters, colorMap) {
-        const rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-        rows.forEach(row => {
-            console.log(row.split('').map(l => colorMap[letters[l]](l)).join(' '));
-        });
     }
 }
 
 async function openSettings() {
     while (true) {
         const settingsOptions = [
-            { title: lang.settings.language }, { title: lang.settings.maxAttempts }, { title: lang.settings.back }
+            { title: translation.settings.language }, { title: translation.settings.maxAttempts }, { title: translation.settings.back }
         ]
         console.clear();
         settingsOptions.forEach((option, index) => {
             console.log(`${index + 1} - ${option.title}`)
         });
-        const input = await question(lang.interactions.action+" ");
+        const input = await question(translation.interactions.action+" ");
 
-        if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
+        if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= settingsOptions.length) {
             switch (Number(input)) {
                 case 1:
                     await openLanguagePage()
@@ -304,8 +314,8 @@ async function openLanguagePage() {
         console.log(`${option.acronym} - ${option.name}`)
     });
 
-    const input = await question(lang.interactions.languageChange+" ");
-    if (languagesList.some(lang => lang.acronym === input.toLowerCase()) && input != currentLanguage) {
+    const input = await question(translation.interactions.languageChange+" ");
+    if (languagesList.some(translation => translation.acronym === input.toLowerCase()) && input != currentLanguage) {
         const confirm = await openConfirmationLanguage(input) 
         if(confirm)
         await changeLanguage(input)
@@ -323,9 +333,10 @@ async function openConfirmationLanguage(choosenLang){
 
 async function openMaxAttemptsPage() {
     const defaultMaxAttempt = 6;
-    console.log(lang.messages.currentAttempts.replace("{attemptsNumber}", attemptsLimit));
-    console.log(lang.messages.maxAttemptsChange.replace("{attemptsNumber}", defaultMaxAttempt));
-    const input = await question(lang.interactions.maximumAttempts+" ");
+    let colorAttempts = attemptsLimit==defaultMaxAttempt?'green':'red';
+    console.log(chalk[colorAttempts](translation.messages.currentAttempts.replace("{attemptsNumber}", attemptsLimit)) );
+    console.log(translation.messages.maxAttemptsChange.replace("{attemptsNumber}", defaultMaxAttempt));
+    const input = await question(translation.interactions.maximumAttempts+" ");
     if (!isNaN(input) && input.trim() !== '') {
         attemptsLimit = Number(input);
     } else {
@@ -344,11 +355,11 @@ async function changeLanguage(desiredLanguage) {
 async function showInstructions() {
     console.clear();
 
-    console.log(lang.instructions.title);
-    console.log(lang.instructions.goal.replace("{attempts}", attemptsLimit));
+    console.log(translation.instructions.title);
+    console.log(translation.instructions.goal.replace("{attempts}", attemptsLimit));
 
     console.log("");
-    lang.instructions.howToPlay.forEach(line => {
+    translation.instructions.howToPlay.forEach(line => {
         console.log(line
             .replace("{green}", chalk.green('Green'))
             .replace("{yellow}", chalk.yellow('Yellow'))
@@ -357,41 +368,41 @@ async function showInstructions() {
     });
 
     console.log("");
-    lang.instructions.rules.forEach(line => {
+    translation.instructions.rules.forEach(line => {
         console.log(line
-            .replace("{exit}", chalk.cyan(lang.actions.exit))
+            .replace("{exit}", chalk.cyan(translation.actions.exit))
         );
     });
 
     console.log("");
-    lang.instructions.tips.forEach(line => console.log(line));
+    translation.instructions.tips.forEach(line => console.log(line));
 
-    console.log(lang.instructions.end);
-    await question(lang.interactions.enter);
+    console.log(translation.instructions.end);
+    await question(translation.interactions.enter);
 }
 
 
 
 async function showCredits() {
     console.clear();
-    console.log(chalk.white(lang.credits.title));
-    console.log(lang.credits.dev);
-    console.log(lang.credits.contact);
-    console.log(lang.credits.github);
+    console.log(chalk.white(translation.credits.title));
+    console.log(translation.credits.dev);
+    console.log(translation.credits.contact);
+    console.log(translation.credits.github);
 
     console.log();
-    lang.credits.libs.forEach((lib, index) => console.log(`${index==0?'':'- '}${lib}`));
+    translation.credits.libs.forEach((lib, index) => console.log(`${index==0?'':'- '}${lib}`));
 
     console.log();
-    lang.credits.inspirations.forEach((item, index) => console.log(`${index==0?'':'- '}${item}`));
+    translation.credits.inspirations.forEach((item, index) => console.log(`${index==0?'':'- '}${item}`));
 
-    console.log("\n" + lang.credits.openSource);
+    console.log("\n" + translation.credits.openSource);
 
     console.log();
-    lang.credits.repos.forEach((repo, index) => console.log(`${index==0?'':'- '}${repo}`));
+    translation.credits.repos.forEach((repo, index) => console.log(`${index==0?'':'- '}${repo}`));
 
-    console.log(lang.credits.end);
-    await question(lang.interactions.enter);
+    console.log(translation.credits.end);
+    await question(translation.interactions.enter);
 }
 
 
