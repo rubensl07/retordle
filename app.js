@@ -1,6 +1,6 @@
-import chalk from 'chalk';
-import readline from 'readline';
-import fs from 'fs/promises';
+const chalk = require('chalk');
+const readline = require('readline');
+const fs = require('fs').promises;
 
 const languagesList = [
     {
@@ -19,18 +19,18 @@ let translation = {};
 
 async function loadJSON() {
     function getFolderNameByLanguage(language) {
-    const map = {
-        en: "en-US",
-        pt: "pt-BR"
-    };
-    return map[language] || "en-US"; // padrão
-}
+        const map = {
+            en: "en-US",
+            pt: "pt-BR"
+        };
+        return map[language] || "en-US";
+    }
 
 
-function getDataPath(language, fileName) {
-    return `./data/${getFolderNameByLanguage(language)}/${fileName}`;
-}
-       const keyListPath = getDataPath(currentLanguage, 'valid-key.json');
+    function getDataPath(language, fileName) {
+        return `./data/${getFolderNameByLanguage(language)}/${fileName}`;
+    }
+    const keyListPath = getDataPath(currentLanguage, 'valid-key.json');
     const wordsPath = getDataPath(currentLanguage, 'valid-words.json');
 
     const jsonKeyListString = await fs.readFile(keyListPath, 'utf8');
@@ -47,13 +47,12 @@ function getDataPath(language, fileName) {
 }
 
 async function loadLanguage() {
-    translation = await getLanguage(currentLanguage)
+    translation = await getLanguage(currentLanguage);
 }
 
-async function getLanguage(language){
-    return JSON.parse(
-        await fs.readFile(`./lang/${language}.json`, 'utf8')
-    );
+async function getLanguage(language) {
+    const data = await fs.readFile(`./lang/${language}.json`, 'utf8');
+    return JSON.parse(data);
 }
 
 const rl = readline.createInterface({
@@ -72,7 +71,6 @@ async function main() {
     await loadJSON();
     await loadLanguage();
     while (true) {
-        console.log(` ===========================================================\n|  _____  ______ _______ ____  _____  _____  _      ______  |\n| |  __ \\|  ____|__   __/ __ \\|  __ \\|  __ \\| |    |  ____| |\n| | |__) | |__     | | | |  | | |__) | |  | | |    | |__    |\n| |  _  /|  __|    | | | |  | |  _  /| |  | | |    |  __|   |\n| | | \\ \\| |____   | | | |__| | | \\ \\| |__| | |____| |____  |\n| |_|  \\_\\______|  |_|  \\____/|_|  \\_\\_____/|______|______| |\n|                                                           |\n ===========================================================`);
         const resultMenu = await menu();
         const choosenOption = (menuOptions[resultMenu - 1]);
         console.clear();
@@ -90,11 +88,12 @@ async function menu() {
         { title: translation.menu.exit, function: finish }
     ];
     while (true) {
-
+    console.clear();
+    console.log(` ===========================================================\n|  _____  ______ _______ ____  _____  _____  _      ______  |\n| |  __ \\|  ____|__   __/ __ \\|  __ \\|  __ \\| |    |  ____| |\n| | |__) | |__     | | | |  | | |__) | |  | | |    | |__    |\n| |  _  /|  __|    | | | |  | |  _  /| |  | | |    |  __|   |\n| | | \\ \\| |____   | | | |__| | | \\ \\| |__| | |____| |____  |\n| |_|  \\_\\______|  |_|  \\____/|_|  \\_\\_____/|______|______| |\n|                                                           |\n ===========================================================`);
         menuOptions.forEach((option, index) => {
             console.log(`${index + 1} - ${option.title}`)
         });
-        const input = await question(translation.interactions.action+" ");
+        const input = await question(translation.interactions.action + " ");
         // const input = await question(`Digite uma opção${repeatedMessage ? " válida" : ""}: `);
 
         if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
@@ -107,10 +106,10 @@ async function menu() {
 async function startGame() {
     let playAgain = true;
 
-    while(playAgain){
+    while (playAgain) {
 
         const keyWord = (keyList[Math.floor(Math.random() * keyList.length)]).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-    
+
         wordCharacterCount = keyWord.length;
         let gameResult = 0;
         const attempts = [];
@@ -142,17 +141,17 @@ async function startGame() {
             "Y": 0,
             "Z": 0
         }
-    
+
         const colorMap = {
             0: (l) => l,
             1: chalk.gray,
             2: chalk.bgYellow,
             3: chalk.bgGreen
         };
-    
+
         console.clear();
         while (attempts.length < attemptsLimit && gameResult === 0) {
-            const input = await question(translation.interactions.guess+ " ");
+            const input = await question(translation.interactions.guess + " ");
             const typedWord = input.trim().toUpperCase();
             if (typedWord.trim().toLowerCase() === translation.actions.cheat) {
                 console.log(translation.messages.cheatResponse);
@@ -161,12 +160,12 @@ async function startGame() {
                 gameResult = 2;
                 break;
             }
-    
+
             if (!validateWord(typedWord, wordCharacterCount, attempts))
                 continue;
-    
+
             console.clear();
-    
+
             gameResult = (keyWord == typedWord) * 1;
             attempts.push(typedWord);
             attempts.forEach(attempt => {
@@ -175,42 +174,42 @@ async function startGame() {
             if (gameResult != 0) {
                 continue;
             }
-    
+
             printKeyboard(letters, colorMap);
         }
-    
-    
+
+
         if (gameResult != 1) {
             console.log(chalk.green(keyWord))
         }
-    
+
         const messages = {
             0: `${translation.messages.gameResults.lose}\n${translation.interactions.finishedGameOptions} `,
             1: `${translation.messages.gameResults.win}\n${translation.interactions.finishedGameOptions}`,
             2: `${translation.messages.gameResults.quit}\n${translation.interactions.finishedGameOptions} `
         };
-    
+
         console.log(messages[gameResult]);
-    
+
         while (true) {
-            const input = await question(translation.interactions.action+" ");
-    
+            const input = await question(translation.interactions.action + " ");
+
             if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= menuOptions.length) {
                 if (Number(input) === 1) {
-                    break; 
+                    break;
                 } else {
                     playAgain = false;
                     break;
                 }
             }
         }
-    
+
         function coloringLetters(keyWord, typedWord) {
             const coloredLetters = [];
             const keyWordArr = keyWord.split('');
             const typedWordArr = typedWord.split('');
             const usedPositions = new Array(wordCharacterCount).fill(false);
-    
+
             // Primeiro, marca verdes e marca as posições usadas
             for (let i = 0; i < wordCharacterCount; i++) {
                 if (typedWordArr[i] === keyWordArr[i]) {
@@ -221,14 +220,14 @@ async function startGame() {
                     coloredLetters[i] = null; // placeholder para agora
                 }
             }
-    
+
             // Depois, marca amarelas e cinzas
             for (let i = 0; i < wordCharacterCount; i++) {
                 if (coloredLetters[i] !== null) continue;
-    
+
                 const letter = typedWordArr[i];
                 let foundYellow = false;
-    
+
                 for (let j = 0; j < wordCharacterCount; j++) {
                     if (!usedPositions[j] && keyWordArr[j] === letter) {
                         foundYellow = true;
@@ -236,7 +235,7 @@ async function startGame() {
                         break;
                     }
                 }
-    
+
                 if (foundYellow) {
                     coloredLetters[i] = chalk.yellow(letter);
                     if (letters[letter] !== 3) letters[letter] = 2;
@@ -245,34 +244,34 @@ async function startGame() {
                     if (letters[letter] !== 3 && letters[letter] !== 2) letters[letter] = 1;
                 }
             }
-    
+
             return coloredLetters.join('');
         }
-    
-    
+
+
         function validateWord(typedWord, wordCharacterCount, attempts) {
             if (typedWord.length !== wordCharacterCount) {
                 console.log(translation.messages.invalid_length);
                 return false;
             }
-    
+
             if (!/^[a-zA-Z]+$/.test(typedWord)) {
                 console.log(translation.messages.letters_only);
                 return false;
             }
-    
+
             if (attempts.includes(typedWord)) {
                 console.log(translation.messages.word_used);
                 return false;
             }
-    
+
             if (!wordList.includes(typedWord.toLowerCase())) {
                 console.log(translation.messages.invalid_word);
                 return false;
             }
             return true;
         }
-    
+
         function printKeyboard(letters, colorMap) {
             const rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
             rows.forEach(row => {
@@ -291,7 +290,7 @@ async function openSettings() {
         settingsOptions.forEach((option, index) => {
             console.log(`${index + 1} - ${option.title}`)
         });
-        const input = await question(translation.interactions.action+" ");
+        const input = await question(translation.interactions.action + " ");
 
         if (!isNaN(input) && input.trim() !== '' && input.trim() > 0 && input.trim() <= settingsOptions.length) {
             switch (Number(input)) {
@@ -314,29 +313,29 @@ async function openLanguagePage() {
         console.log(`${option.acronym} - ${option.name}`)
     });
 
-    const input = await question(translation.interactions.languageChange+" ");
+    const input = await question(translation.interactions.languageChange + " ");
     if (languagesList.some(translation => translation.acronym === input.toLowerCase()) && input != currentLanguage) {
-        const confirm = await openConfirmationLanguage(input) 
-        if(confirm)
-        await changeLanguage(input)
+        const confirm = await openConfirmationLanguage(input)
+        if (confirm)
+            await changeLanguage(input)
     }
     return;
 }
 
-async function openConfirmationLanguage(choosenLang){
+async function openConfirmationLanguage(choosenLang) {
     const languageObj = await getLanguage(choosenLang);
-    const input = await question(languageObj.confirmationLanguage.message+" ");
-    if(languageObj.confirmationLanguage.affirmative.includes(input.trim().toLowerCase()))
+    const input = await question(languageObj.confirmationLanguage.message + " ");
+    if (languageObj.confirmationLanguage.affirmative.includes(input.trim().toLowerCase()))
         return true
     return false
 }
 
 async function openMaxAttemptsPage() {
     const defaultMaxAttempt = 6;
-    let colorAttempts = attemptsLimit==defaultMaxAttempt?'green':'red';
-    console.log(chalk[colorAttempts](translation.messages.currentAttempts.replace("{attemptsNumber}", attemptsLimit)) );
+    let colorAttempts = attemptsLimit == defaultMaxAttempt ? 'green' : 'red';
+    console.log(chalk[colorAttempts](translation.messages.currentAttempts.replace("{attemptsNumber}", attemptsLimit)));
     console.log(translation.messages.maxAttemptsChange.replace("{attemptsNumber}", defaultMaxAttempt));
-    const input = await question(translation.interactions.maximumAttempts+" ");
+    const input = await question(translation.interactions.maximumAttempts + " ");
     if (!isNaN(input) && input.trim() !== '') {
         attemptsLimit = Number(input);
     } else {
@@ -391,15 +390,15 @@ async function showCredits() {
     console.log(translation.credits.github);
 
     console.log();
-    translation.credits.libs.forEach((lib, index) => console.log(`${index==0?'':'- '}${lib}`));
+    translation.credits.libs.forEach((lib, index) => console.log(`${index == 0 ? '' : '- '}${lib}`));
 
     console.log();
-    translation.credits.inspirations.forEach((item, index) => console.log(`${index==0?'':'- '}${item}`));
+    translation.credits.inspirations.forEach((item, index) => console.log(`${index == 0 ? '' : '- '}${item}`));
 
     console.log("\n" + translation.credits.openSource);
 
     console.log();
-    translation.credits.repos.forEach((repo, index) => console.log(`${index==0?'':'- '}${repo}`));
+    translation.credits.repos.forEach((repo, index) => console.log(`${index == 0 ? '' : '- '}${repo}`));
 
     console.log(translation.credits.end);
     await question(translation.interactions.enter);
