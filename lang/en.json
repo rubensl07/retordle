@@ -12,20 +12,22 @@
         "back": "Go back"
     },
     "messages": {
-        "invalid_length": "Invalid number of characters.",
+        "invalid_length": "Invalid number of characters. Only {letterQuantity} letter words.",
         "letters_only": "Only letters are allowed.",
         "word_used": "You already used this guess.",
         "invalid_word": "Invalid word.",
         "gameResults": {
-        "win": "Congratulations! You got it right!",
-        "lose": "Too bad! Not this time :(",
-        "quit": "Game ended."
+            "win": "Congratulations! You got it right!",
+            "lose": "Too bad! Not this time :(",
+            "quit": "Game ended."
         },
         "cheatResponse": "Funny guy -_-",
-        "currentAttempts": "Attempts so far: {attemptsNumber}", 
-        "maxAttemptsChange": "Set the maximum number of attempts before the game ends.\nIf nothing is set, the default value ({attemptsNumber}) will remain."
+        "currentAttempts": "Attempts so far: {attemptsNumber}",
+        "maxAttemptsChange": "Set the maximum number of attempts before the game ends.\nIf nothing is set, the default value ({attemptsNumber}) will remain.",
+        "confirmUnderstanding": "If you’ve finished reading the instructions, please type ‘continue’ to proceed.",
+        "exitReminder": "Type 'exit' to finish the game."
     },
- "instructions": {
+    "instructions": {
         "title": "================= INSTRUCTIONS =================",
         "goal": "Guess the secret word within {attempts} attempts.",
         "howToPlay": [
@@ -75,20 +77,24 @@
         "end": "==============================================="
     },
     "interactions": {
-        "guess" : "Type your guess:",
-        "action" : "Take your action:",
-        "languageChange" : "If you want to change language, type the desired language:",
+        "guess": "Type your guess:",
+        "action": "Take your action:",
+        "languageChange": "If you want to change language, type the desired language:",
         "finishedGameOptions": "1 - Play again\n2 - Return to menu",
         "maximumAttempts": "Insert the maximum number of attempts:",
-        "enter": "Press ENTER to navigate to menu."
-
+        "enter": "Press ENTER to navigate."
     },
     "actions": {
         "exit": "exit",
-        "cheat": "your guess"
+        "cheat": "your guess",
+        "continue": "Continue"
+
     },
     "confirmationLanguage": {
         "message": "Are you certain you want to change language?",
-        "affirmative": ["y", "yes"]
+        "affirmative": [
+            "y",
+            "yes"
+        ]
     }
 }

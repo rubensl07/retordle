@@ -12,7 +12,7 @@
         "back": "Voltar"
     },
     "messages": {
-        "invalid_length": "Quantidade de caracteres inválida.",
+        "invalid_length": "Quantidade de caracteres inválida. Apenas palavras de {letterQuantity} letras.",
         "letters_only": "Apenas letras.",
         "word_used": "Você já usou esse palpite.",
         "invalid_word": "Palavra inválida.",
@@ -23,7 +23,9 @@
         },
         "cheatResponse": "Engraçadinho -_-",
         "currentAttempts": "Quantidade de tentativas atual: {attemptsNumber}", 
-        "maxAttemptsChange": "Aqui é possível configurar o número máximo de tentativas possíveis antes de finalizar o jogo.\nCaso não seja inserido nada, será mantido o valor padrão ({attemptsNumber})"
+        "maxAttemptsChange": "Aqui é possível configurar o número máximo de tentativas possíveis antes de finalizar o jogo.\nCaso não seja inserido nada, será mantido o valor padrão ({attemptsNumber})",
+        "confirmUnderstanding": "Se você terminou de ler as instruções, digite ‘continuar’ para prosseguir.",
+        "exitReminder": "Para encerrar o jogo, digite '{exit}'."
     },
    "instructions": {
         "title": "================= INSTRUÇÕES =================",
@@ -75,16 +77,17 @@
         "end": "==============================================="
     },
     "interactions": {
-        "guess" : "Digite seu palpite:",
+        "guess" : "Digite seu palpite (palavra com 5 letras):",
         "action" : "Digite sua ação:",
         "languageChange": "Caso deseje alterar o idioma, digite o idioma desejado:",
         "finishedGameOptions": "1 - Jogar novamente\n2 - Voltar ao menu",
         "maximumAttempts": "Insira o valor máximo de tentativas:",
-        "enter": "Aperte ENTER para navegar ao menu"
+        "enter": "Aperte ENTER para navegar."
     },
     "actions": {
         "exit": "sair",
-        "cheat": "seu palpite"
+        "cheat": "seu palpite",
+        "continue": "Continuar"
     },
     "confirmationLanguage": {
         "message": "Tem certeza que deseja alterar o idioma?",

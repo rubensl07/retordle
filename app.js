@@ -16,6 +16,7 @@ let wordList = [];
 let attemptsLimit = 6;
 let wordCharacterCount = 0;
 let translation = {};
+let instructionsShowed = false;
 
 async function loadJSON() {
     function getFolderNameByLanguage(language) {
@@ -66,10 +67,25 @@ function question(query) {
     });
 }
 
+async function changeLanguageInit() {
+    while (true) {
+        console.clear();
+        languagesList.forEach((option) => {
+            console.log(`${option.acronym} - ${option.name}`)
+        });
+
+        const input = await question("Type your language choice/Digite sua escolha de idioma: ");
+
+        if (languagesList.some(translation => translation.acronym === input.toLowerCase())) {
+            await changeLanguage(input)
+            break
+        }
+    }
+}
+
 async function main() {
     console.clear();
-    await loadJSON();
-    await loadLanguage();
+    await changeLanguageInit();
     while (true) {
         const resultMenu = await menu();
         const choosenOption = (menuOptions[resultMenu - 1]);
@@ -80,19 +96,15 @@ async function main() {
 let menuOptions = []
 async function menu() {
     // let repeatedMessage = false;
-    menuOptions = [
-        { title: translation.menu.start, function: startGame },
-        { title: translation.menu.settings, function: openSettings },
-        { title: translation.menu.instructions, function: showInstructions },
-        { title: translation.menu.credits, function: showCredits },
-        { title: translation.menu.exit, function: finish }
-    ];
+    menuOptions = [{ title: translation.menu.start, function: startGame, order: 2 }, { title: translation.menu.settings, function: openSettings, order: 3 }, { title: translation.menu.instructions, function: showInstructions, order: 1 }, { title: translation.menu.credits, function: showCredits, order: 4 }, { title: translation.menu.exit, function: finish, order: 999 }];
     while (true) {
-    console.clear();
-    console.log(` ===========================================================\n|  _____  ______ _______ ____  _____  _____  _      ______  |\n| |  __ \\|  ____|__   __/ __ \\|  __ \\|  __ \\| |    |  ____| |\n| | |__) | |__     | | | |  | | |__) | |  | | |    | |__    |\n| |  _  /|  __|    | | | |  | |  _  /| |  | | |    |  __|   |\n| | | \\ \\| |____   | | | |__| | | \\ \\| |__| | |____| |____  |\n| |_|  \\_\\______|  |_|  \\____/|_|  \\_\\_____/|______|______| |\n|                                                           |\n ===========================================================`);
-        menuOptions.forEach((option, index) => {
-            console.log(`${index + 1} - ${option.title}`)
-        });
+        console.clear();
+        console.log(` ===========================================================\n|  _____  ______ _______ ____  _____  _____  _      ______  |\n| |  __ \\|  ____|__   __/ __ \\|  __ \\|  __ \\| |    |  ____| |\n| | |__) | |__     | | | |  | | |__) | |  | | |    | |__    |\n| |  _  /|  __|    | | | |  | |  _  /| |  | | |    |  __|   |\n| | | \\ \\| |____   | | | |__| | | \\ \\| |__| | |____| |____  |\n| |_|  \\_\\______|  |_|  \\____/|_|  \\_\\_____/|______|______| |\n|                                                           |\n ===========================================================`);
+        menuOptions
+            .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+            .forEach((option, index) => {
+                console.log(`${index + 1} - ${option.title}`);
+            });
         const input = await question(translation.interactions.action + " ");
         // const input = await question(`Digite uma opção${repeatedMessage ? " válida" : ""}: `);
 
@@ -104,6 +116,9 @@ async function menu() {
 }
 
 async function startGame() {
+    if (!instructionsShowed)
+        await showInstructions();
+
     let playAgain = true;
 
     while (playAgain) {
@@ -150,7 +165,11 @@ async function startGame() {
         };
 
         console.clear();
+        let currentRound = 0
         while (attempts.length < attemptsLimit && gameResult === 0) {
+            if(currentRound % 3 === 0)
+                console.log(chalk.gray(translation.messages.exitReminder.replace("{exit}", translation.actions.exit)));
+            currentRound++;
             const input = await question(translation.interactions.guess + " ");
             const typedWord = input.trim().toUpperCase();
             if (typedWord.trim().toLowerCase() === translation.actions.cheat) {
@@ -251,7 +270,7 @@ async function startGame() {
 
         function validateWord(typedWord, wordCharacterCount, attempts) {
             if (typedWord.length !== wordCharacterCount) {
-                console.log(translation.messages.invalid_length);
+                console.log(translation.messages.invalid_length.replace("{letterQuantity}", wordCharacterCount));
                 return false;
             }
 
@@ -352,8 +371,9 @@ async function changeLanguage(desiredLanguage) {
 }
 
 async function showInstructions() {
+    const askConfirmation = !instructionsShowed;
+    instructionsShowed = true;
     console.clear();
-
     console.log(translation.instructions.title);
     console.log(translation.instructions.goal.replace("{attempts}", attemptsLimit));
 
@@ -377,10 +397,20 @@ async function showInstructions() {
     translation.instructions.tips.forEach(line => console.log(line));
 
     console.log(translation.instructions.end);
-    await question(translation.interactions.enter);
+
+    if(!askConfirmation){
+        await question(translation.interactions.enter);
+    } else {
+        const confirmWord = (translation.actions.continue).toLowerCase().trim();
+        while (true) {
+            const input = await question(translation.messages.confirmUnderstanding+" "
+        );
+            if(input.toLowerCase().trim() === confirmWord){
+                break;
+            }
+        }
+    }
 }
-
-
 
 async function showCredits() {
     console.clear();
